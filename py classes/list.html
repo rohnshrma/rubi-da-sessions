@@ -106,6 +106,16 @@
     font-size: .96rem;
   }
   .note b { color: var(--river); }
+  .task { border-top: 1px dashed var(--line); padding: 14px 0 6px; }
+  .task:first-of-type { border-top: none; }
+  .task h3 { margin-top: 0; }
+  .tag { font: 11px Georgia, serif; text-transform: uppercase; letter-spacing: 1px; padding: 2px 8px; border-radius: 10px; margin-left: 6px; vertical-align: middle; }
+  .easy { background: #dfead2; color: var(--moss); }
+  .med { background: #f1e4c8; color: var(--bark); }
+  .hard { background: #f3d9cb; color: var(--clay); }
+  details { margin: 8px 0; }
+  summary { cursor: pointer; color: var(--river); font-weight: bold; }
+  summary:hover { text-decoration: underline; }
   footer { text-align: center; color: var(--bark); font-size: .9rem; padding-bottom: 30px; }
   @media (max-width: 600px) {
     header h1 { font-size: 2rem; }
@@ -257,6 +267,145 @@ print(x)</code></pre>
 x           # in Jupyter, the last line's value is shown</code></pre>
   <div class="out">[]</div>
   <p>Since <code>x</code> was a copy, <code>marks</code> still has all its items.</p>
+</section>
+
+<section>
+  <h2>Practice Tasks</h2>
+  <p>Try each one in Jupyter first. Open the answer only after you have tried.</p>
+
+  <div class="task">
+    <h3>1. First and last <span class="tag easy">Easy</span></h3>
+    <p>Make a list <code>fruits = ["mango", "banana", "apple"]</code>. Print the first and the last fruit.</p>
+    <details><summary>Show answer</summary>
+<pre><code>fruits = ["mango", "banana", "apple"]
+print(fruits[0])    # index 0 is the first item
+print(fruits[-1])   # -1 is always the last item</code></pre>
+    <div class="out">mango
+apple</div>
+    </details>
+  </div>
+
+  <div class="task">
+    <h3>2. Grow the basket <span class="tag easy">Easy</span></h3>
+    <p>In the same list, add <code>"guava"</code> at the end and <code>"kiwi"</code> at the start.</p>
+    <details><summary>Show answer</summary>
+<pre><code>fruits.append("guava")    # goes to the end
+fruits.insert(0, "kiwi")  # index 0 means the very start
+print(fruits)</code></pre>
+    <div class="out">['kiwi', 'mango', 'banana', 'apple', 'guava']</div>
+    </details>
+  </div>
+
+  <div class="task">
+    <h3>3. Count and find <span class="tag easy">Easy</span></h3>
+    <p>For <code>scores = [45, 78, 45, 90, 45]</code>, find how many times 45 comes and where 90 is.</p>
+    <details><summary>Show answer</summary>
+<pre><code>scores = [45, 78, 45, 90, 45]
+print(scores.count(45))   # 45 appears 3 times
+print(scores.index(90))   # 90 is at index 3</code></pre>
+    <div class="out">3
+3</div>
+    </details>
+  </div>
+
+  <div class="task">
+    <h3>4. Remove two ways <span class="tag med">Medium</span></h3>
+    <p>From <code>scores</code>, remove the first 45 by value, then remove the last item by position. What is left?</p>
+    <details><summary>Show answer</summary>
+<pre><code>scores.remove(45)   # only the first 45 goes
+scores.pop()        # no index, so the last item goes
+print(scores)</code></pre>
+    <div class="out">[78, 45, 90]</div>
+    </details>
+  </div>
+
+  <div class="task">
+    <h3>5. Join two lists <span class="tag med">Medium</span></h3>
+    <p>You have <code>a = [1, 2, 3]</code> and <code>b = [4, 5]</code>. Add all items of <code>b</code> into <code>a</code>. Then try <code>append</code> instead and see the difference.</p>
+    <details><summary>Show answer</summary>
+<pre><code>a = [1, 2, 3]
+b = [4, 5]
+a.extend(b)   # 4 and 5 are added one by one
+print(a)
+
+c = [1, 2, 3]
+c.append(b)   # the whole list b becomes one item
+print(c)</code></pre>
+    <div class="out">[1, 2, 3, 4, 5]
+[1, 2, 3, [4, 5]]</div>
+    </details>
+  </div>
+
+  <div class="task">
+    <h3>6. Costliest item <span class="tag med">Medium</span></h3>
+    <p>Sort <code>prices = [250, 99, 480, 150]</code> from high to low and print the highest price.</p>
+    <details><summary>Show answer</summary>
+<pre><code>prices = [250, 99, 480, 150]
+prices.sort(reverse=True)   # big to small
+print(prices)
+print(prices[0])            # after sorting, the first item is the highest</code></pre>
+    <div class="out">[480, 250, 150, 99]
+480</div>
+    </details>
+  </div>
+
+  <div class="task">
+    <h3>7. Fix a wrong mark <span class="tag med">Medium</span></h3>
+    <p>In <code>marks = [35, 72, 58]</code> the 35 was entered by mistake. Change it to 40 without typing its index yourself.</p>
+    <details><summary>Show answer</summary>
+<pre><code>marks = [35, 72, 58]
+pos = marks.index(35)   # find where 35 is
+marks[pos] = 40         # replace it at that position
+print(marks)</code></pre>
+    <div class="out">[40, 72, 58]</div>
+    </details>
+  </div>
+
+  <div class="task">
+    <h3>8. Remove without error <span class="tag med">Medium</span></h3>
+    <p><code>items = ["book", "pencil"]</code>. Write code that removes <code>"pen"</code> only if it is present, so the program never crashes.</p>
+    <details><summary>Show answer</summary>
+<pre><code>items = ["book", "pencil"]
+if "pen" in items:      # 'in' checks if the item exists
+    items.remove("pen")
+print(items)            # nothing removed, and no error</code></pre>
+    <div class="out">['book', 'pencil']</div>
+    </details>
+  </div>
+
+  <div class="task">
+    <h3>9. Guess the output <span class="tag hard">Tricky</span></h3>
+    <p>Without running it, what will this print? Then change one line so <code>a</code> stays the same.</p>
+<pre><code>a = [1, 2, 3]
+b = a
+b.append(4)
+print(a)</code></pre>
+    <details><summary>Show answer</summary>
+    <div class="out">[1, 2, 3, 4]</div>
+    <p><code>b = a</code> does not copy. Both names point to the same list, so <code>a</code> changes too. Fix:</p>
+<pre><code>a = [1, 2, 3]
+b = a.copy()   # b is now a separate list
+b.append(4)
+print(a)       # a is safe</code></pre>
+    <div class="out">[1, 2, 3]</div>
+    </details>
+  </div>
+
+  <div class="task">
+    <h3>10. Topper and lowest <span class="tag hard">Tricky</span></h3>
+    <p>For <code>marks = [67, 89, 45, 92, 58]</code>, print the highest and lowest marks using only list methods (no <code>max()</code> or <code>min()</code>). Keep the original list unchanged.</p>
+    <details><summary>Show answer</summary>
+<pre><code>marks = [67, 89, 45, 92, 58]
+sorted_marks = marks.copy()   # copy first so the original order is kept
+sorted_marks.sort()           # small to big
+print("Lowest:", sorted_marks[0])     # first item after sorting
+print("Highest:", sorted_marks[-1])   # last item after sorting
+print(marks)                          # original is unchanged</code></pre>
+    <div class="out">Lowest: 45
+Highest: 92
+[67, 89, 45, 92, 58]</div>
+    </details>
+  </div>
 </section>
 
 <section>
