@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python Sets | Class Notes</title>
+<style>
+  :root {
+    --petal: #f7c6d4;
+    --blush: #fbe4ea;
+    --rose: #e07a9a;
+    --deep: #b03e66;
+    --plum: #5b2a45;
+    --ink: #3a2430;
+    --cream: #fffaf7;
+    --branch: #6b4a3a;
+    --leaf: #8fae7c;
+    --line: #f0d3dc;
+    --code-bg: #2e1d27;
+    --code-fg: #f9e9ef;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    color: var(--ink);
+    font: 17px/1.7 "Segoe UI", system-ui, -apple-system, sans-serif;
+    background:
+      radial-gradient(circle at 10% 0%, #fde9ef 0, transparent 45%),
+      radial-gradient(circle at 90% 30%, #fbe1e9 0, transparent 40%),
+      linear-gradient(180deg, #fff6f8, #fdeef2);
+    background-attachment: fixed;
+    overflow-x: hidden;
+  }
+
+  /* ---------- falling petals ---------- */
+  .petals { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+  .petal {
+    position: absolute; top: -40px;
+    width: 14px; height: 11px;
+    background: linear-gradient(135deg, #ffd9e3, var(--rose));
+    border-radius: 0 80% 0 80%;
+    opacity: .75;
+    animation: fall linear infinite, sway ease-in-out infinite alternate;
+  }
+  @keyframes fall { to { transform: translateY(110vh) rotate(540deg); } }
+  @keyframes sway { from { margin-left: -30px; } to { margin-left: 30px; } }
+
+  /* ---------- header ---------- */
+  header {
+    position: relative; z-index: 1;
+    text-align: center;
+    padding: 70px 20px 90px;
+    perspective: 900px;
+  }
+  .hero {
+    display: inline-block;
+    transform-style: preserve-3d;
+    animation: float 6s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%,100% { transform: rotateX(8deg) rotateY(-6deg) translateY(0); }
+    50% { transform: rotateX(-4deg) rotateY(6deg) translateY(-8px); }
+  }
+  header h1 {
+    margin: 0;
+    font: 700 clamp(2.4rem, 7vw, 4.2rem)/1.1 Georgia, "Times New Roman", serif;
+    color: var(--deep);
+    text-shadow: 1px 1px 0 #f3b3c6, 2px 2px 0 #eea3b9, 3px 3px 0 #e893ad, 4px 4px 0 #e283a0, 6px 10px 18px rgba(176,62,102,.3);
+  }
+  header p { margin: 14px 0 0; color: var(--plum); font-style: italic; font-size: 1.1rem; }
+  .branch { position: absolute; top: 0; width: min(340px, 45vw); opacity: .9; }
+  .branch.left { left: 0; }
+  .branch.right { right: 0; transform: scaleX(-1); }
+
+  nav {
+    position: sticky; top: 0; z-index: 5;
+    display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;
+    padding: 10px;
+    background: rgba(255,246,248,.82);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+  }
+  nav a {
+    color: var(--deep); text-decoration: none; font-size: .88rem;
+    padding: 4px 12px; border-radius: 20px; border: 1px solid var(--line);
+    background: #fff; transition: background .2s, transform .2s;
+  }
+  nav a:hover { background: var(--blush); transform: translateY(-2px); }
+
+  main { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 20px 18px 60px; }
+
+  /* ---------- 3D cards ---------- */
+  .card {
+    position: relative;
+    background: rgba(255,250,247,.92);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 26px 28px;
+    margin: 34px 0;
+    box-shadow: 0 1px 0 #fff inset, 0 14px 30px -12px rgba(176,62,102,.28), 0 4px 0 #f3d0db;
+    transform-style: preserve-3d;
+    transition: transform .25s ease-out, box-shadow .25s;
+    will-change: transform;
+  }
+  .card:hover { box-shadow: 0 1px 0 #fff inset, 0 24px 40px -14px rgba(176,62,102,.38), 0 4px 0 #f3d0db; }
+  .card > * { transform: translateZ(0); }
+  .reveal { opacity: 0; translate: 0 30px; transition: opacity .7s, translate .7s; }
+  .reveal.in { opacity: 1; translate: 0 0; }
+
+  h2 {
+    margin: 0 0 12px;
+    font: 700 1.6rem Georgia, serif;
+    color: var(--deep);
+    display: flex; align-items: center; gap: 12px;
+  }
+  h2 .num {
+    flex: none;
+    width: 38px; height: 38px; border-radius: 50%;
+    display: grid; place-items: center;
+    font: 700 1rem "Segoe UI", sans-serif; color: #fff;
+    background: radial-gradient(circle at 30% 30%, #f7a8bf, var(--deep));
+    box-shadow: 0 4px 10px rgba(176,62,102,.4);
+  }
+  h3 { color: var(--plum); margin: 24px 0 6px; font-size: 1.15rem; }
+  p { margin: 8px 0; }
+  code {
+    font-family: Consolas, "Courier New", monospace;
+    background: var(--blush); color: var(--deep);
+    padding: 1px 6px; border-radius: 4px; font-size: .9em;
+  }
+  pre {
+    background: var(--code-bg); color: var(--code-fg);
+    padding: 16px 18px; border-radius: 12px;
+    overflow-x: auto;
+    font: 15px/1.6 Consolas, "Courier New", monospace;
+    margin: 12px 0 6px;
+    box-shadow: inset 0 0 0 1px #4a2e3d, 0 8px 18px -10px rgba(0,0,0,.5);
+  }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .c { color: #f5a3bd; font-style: italic; }
+  .k { color: #ffd28a; }
+  .s { color: #b9e3a6; }
+  .out {
+    background: #fff; border: 1px dashed var(--rose);
+    border-radius: 10px; padding: 8px 14px;
+    font: 14px/1.5 Consolas, monospace; color: var(--plum);
+    white-space: pre; overflow-x: auto;
+  }
+  .out::before { content: "Output"; display: block; font: 700 11px "Segoe UI", sans-serif; letter-spacing: 1.5px; text-transform: uppercase; color: var(--rose); }
+  .out.err { background: #fff1f1; border-color: #d9534f; color: #a3302c; }
+  .out.err::before { content: "Error"; color: #d9534f; }
+
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: .95rem; }
+  .tw { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  .tw table { margin: 0; }
+  th, td { padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--line); }
+  th { background: var(--deep); color: #fff; font-weight: 600; }
+  tr:nth-child(even) td { background: #fff3f6; }
+  .yes { color: #4f8a3c; font-weight: 700; }
+  .no { color: var(--deep); font-weight: 700; }
+
+  .note {
+    background: linear-gradient(90deg, #fde7ee, #fff6f8);
+    border-left: 4px solid var(--rose);
+    padding: 10px 16px; margin: 14px 0;
+    border-radius: 0 10px 10px 0; font-size: .96rem;
+  }
+  .note b { color: var(--deep); }
+
+  /* ---------- venn ---------- */
+  .ops { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; margin-top: 16px; }
+  .op {
+    background: #fff; border: 1px solid var(--line); border-radius: 14px;
+    padding: 14px 16px 10px; transition: transform .25s ease-out;
+    transform-style: preserve-3d;
+  }
+  .op h3 { margin: 0 0 4px; }
+  .op .sym { float: right; font: 700 1rem Consolas, monospace; color: var(--deep); background: var(--blush); padding: 0 8px; border-radius: 6px; }
+  .op svg { width: 100%; height: auto; display: block; margin: 6px 0; }
+
+  /* ---------- tasks ---------- */
+  .tasks { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; }
+  .task {
+    background: #fff; border: 1px solid var(--line); border-radius: 14px;
+    padding: 16px 18px; position: relative;
+    transition: transform .25s ease-out, box-shadow .25s;
+    transform-style: preserve-3d;
+  }
+  .task:hover { box-shadow: 0 16px 28px -14px rgba(176,62,102,.4); }
+  .task h3 { margin: 0 0 6px; font-size: 1.05rem; padding-right: 64px; }
+  .task p { font-size: .95rem; }
+  .task .uses { font-size: .82rem; color: var(--plum); opacity: .85; }
+  .tag {
+    position: absolute; top: 14px; right: 14px;
+    font: 700 10px "Segoe UI", sans-serif; letter-spacing: 1px; text-transform: uppercase;
+    padding: 3px 9px; border-radius: 10px;
+  }
+  .easy { background: #e3f1da; color: #3f6f2f; }
+  .med { background: #fde9c9; color: #8a5a12; }
+  .hard { background: #f9d3df; color: var(--deep); }
+
+  footer { position: relative; z-index: 1; text-align: center; color: var(--plum); font-size: .9rem; padding: 0 20px 36px; }
+
+  @media (max-width: 600px) {
+    body { font-size: 16px; }
+    .card { padding: 20px 16px; border-radius: 14px; }
+    pre { font-size: 13.5px; padding: 12px; }
+    h2 { font-size: 1.3rem; }
+    header { padding: 50px 14px 60px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .petal, .hero { animation: none; }
+    .petals { display: none; }
+    .reveal { opacity: 1; translate: none; transition: none; }
+    .card, .op, .task { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="petals" id="petals" aria-hidden="true"></div>
+
+<header>
+  <svg class="branch left" viewBox="0 0 340 160" aria-hidden="true">
+    <path d="M0 20 C80 30 140 60 230 50 S320 90 340 80" stroke="#6b4a3a" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M120 45 C140 80 170 95 200 100" stroke="#6b4a3a" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <g fill="#f7c6d4" stroke="#e07a9a" stroke-width="1">
+      <circle cx="70" cy="28" r="9"/><circle cx="160" cy="58" r="11"/><circle cx="230" cy="50" r="10"/>
+      <circle cx="200" cy="100" r="9"/><circle cx="300" cy="78" r="8"/><circle cx="110" cy="38" r="6"/>
+    </g>
+    <g fill="#b03e66"><circle cx="70" cy="28" r="2.5"/><circle cx="160" cy="58" r="3"/><circle cx="230" cy="50" r="3"/><circle cx="200" cy="100" r="2.5"/><circle cx="300" cy="78" r="2"/></g>
+  </svg>
+  <svg class="branch right" viewBox="0 0 340 160" aria-hidden="true">
+    <path d="M0 30 C90 20 150 70 240 60 S320 100 340 95" stroke="#6b4a3a" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <g fill="#f7c6d4" stroke="#e07a9a" stroke-width="1">
+      <circle cx="60" cy="26" r="10"/><circle cx="150" cy="52" r="8"/><circle cx="250" cy="62" r="11"/><circle cx="320" cy="92" r="7"/>
+    </g>
+    <g fill="#b03e66"><circle cx="60" cy="26" r="3"/><circle cx="150" cy="52" r="2.5"/><circle cx="250" cy="62" r="3"/></g>
+  </svg>
+  <div class="hero">
+    <h1>Python Sets</h1>
+    <p>Every petal is unique, no two are counted twice</p>
+  </div>
+</header>
+
+<nav>
+  <a href="#what">What is a set</a>
+  <a href="#create">Create</a>
+  <a href="#index">No index</a>
+  <a href="#add">Add</a>
+  <a href="#remove">Remove</a>
+  <a href="#ops">Operations</a>
+  <a href="#compare">Compare</a>
+  <a href="#copy">Copy &amp; clear</a>
+  <a href="#summary">Summary</a>
+  <a href="#tasks">Practice</a>
+</nav>
+
+<main>
+
+<section class="card reveal tilt" id="what">
+  <h2><span class="num">1</span>What is a set?</h2>
+  <p>A <b>set</b> is a collection in which every item is <b>unique</b>. We create it with curly brackets <code>{ }</code> and separate the items with commas <code>,</code></p>
+  <div class="tw"><table>
+    <tr><th>Property</th><th>Set</th><th>What it means</th></tr>
+    <tr><td>Ordered</td><td class="no">No</td><td>Python decides the order, we cannot rely on it</td></tr>
+    <tr><td>Indexed</td><td class="no">No</td><td>No <code>marks[0]</code>, there is no position number</td></tr>
+    <tr><td>Changeable</td><td class="yes">Yes, through methods</td><td>We can add or remove items, but cannot replace one by index</td></tr>
+    <tr><td>Duplicates</td><td class="no">Not allowed</td><td>The same value given twice is stored only once</td></tr>
+  </table></div>
+  <div class="note"><b>Real life:</b> think of the attendance register. Even if a student's name is written twice by mistake, the student is counted only once. A set works the same way.</div>
+</section>
+
+<section class="card reveal tilt" id="create">
+  <h2><span class="num">2</span>Creating a set</h2>
+<pre><code><span class="c"># Creating a set of marks using curly brackets { }</span>
+<span class="c"># Note that 12 is written four times on purpose</span>
+marks = {12, 43, 5456, 23, 2, 12, 12, 12}
+
+<span class="c"># type() tells us the data type, here it will say 'set'</span>
+<span class="c"># len() counts the items; duplicates of 12 are removed, so we get 5 and not 8</span>
+<span class="k">print</span>(type(marks), len(marks))</code></pre>
+  <div class="out">&lt;class 'set'&gt; 5</div>
+
+<pre><code><span class="c"># Printing the set: the order may look different from what we typed (unordered)</span>
+<span class="c"># and 12 comes only once (no duplicates allowed)</span>
+<span class="k">print</span>(marks)</code></pre>
+  <div class="out">{5456, 2, 23, 43, 12}</div>
+
+  <h3>Empty set: a common mistake</h3>
+  <p><code>{}</code> alone creates an empty <b>dictionary</b>, not a set. For an empty set always write <code>set()</code>.</p>
+<pre><code>empty_one = {}          <span class="c"># this is a dictionary, not a set</span>
+empty_two = set()       <span class="c"># this is the correct way to make an empty set</span>
+
+<span class="k">print</span>(type(empty_one))  <span class="c"># &lt;class 'dict'&gt;</span>
+<span class="k">print</span>(type(empty_two))  <span class="c"># &lt;class 'set'&gt;</span></code></pre>
+  <div class="out">&lt;class 'dict'&gt;
+&lt;class 'set'&gt;</div>
+
+  <h3>Removing duplicates from a list</h3>
+  <p>Passing a list to <code>set()</code> keeps only the unique values. This is the most common real-life use of sets.</p>
+<pre><code><span class="c"># Cities from which orders came today, some cities are repeated</span>
+order_cities = [<span class="s">"Delhi"</span>, <span class="s">"Mumbai"</span>, <span class="s">"Delhi"</span>, <span class="s">"Pune"</span>, <span class="s">"Mumbai"</span>, <span class="s">"Jaipur"</span>]
+
+unique_cities = set(order_cities)   <span class="c"># set() removes the repeated city names</span>
+<span class="k">print</span>(unique_cities)
+<span class="k">print</span>(len(unique_cities), <span class="s">"unique cities"</span>)   <span class="c"># count of different cities</span></code></pre>
+  <div class="out">{'Mumbai', 'Pune', 'Jaipur', 'Delhi'}
+4 unique cities</div>
+</section>
+
+<section class="card reveal tilt" id="index">
+  <h2><span class="num">3</span>No index, no direct change</h2>
+<pre><code><span class="c"># Trying to read the first item by index</span>
+<span class="c"># Sets have no index, so Python raises TypeError</span>
+marks[0]</code></pre>
+  <div class="out err">TypeError: 'set' object is not subscriptable</div>
+
+<pre><code><span class="c"># Trying to replace an item by index</span>
+<span class="c"># This also fails, because a set has no positions to assign to</span>
+<span class="c"># (We change a set only through methods like add, remove, update)</span>
+marks[0] = 10000</code></pre>
+  <div class="out err">TypeError: 'set' object does not support item assignment</div>
+
+  <h3>Checking membership with <code>in</code></h3>
+  <p>A set cannot be indexed, but checking whether a value exists in it is very fast.</p>
+<pre><code><span class="k">print</span>(43 <span class="k">in</span> marks)        <span class="c"># True, 43 is present in the set</span>
+<span class="k">print</span>(100 <span class="k">in</span> marks)       <span class="c"># False, 100 is not present</span>
+<span class="k">print</span>(100 <span class="k">not in</span> marks)   <span class="c"># True, 'not in' is the opposite check</span></code></pre>
+  <div class="out">True
+False
+True</div>
+
+<pre><code><span class="c"># We can still loop over a set; each item comes once, the order is not fixed</span>
+<span class="k">for</span> m <span class="k">in</span> marks:
+    <span class="k">print</span>(m)</code></pre>
+  <div class="out">5456
+2
+23
+43
+12</div>
+</section>
+
+<section class="card reveal tilt" id="add">
+  <h2><span class="num">4</span>Adding items</h2>
+<pre><code><span class="c"># add() puts ONE new item into the set</span>
+marks.add(999)
+<span class="k">print</span>(marks)
+
+<span class="c"># Adding an item that already exists does nothing, no error either</span>
+marks.add(999)
+<span class="k">print</span>(marks)</code></pre>
+  <div class="out">{5456, 2, 999, 23, 43, 12}
+{5456, 2, 999, 23, 43, 12}</div>
+
+<pre><code><span class="c"># update() adds MANY items at once</span>
+<span class="c"># We can pass a list, a set or a tuple; each item inside gets added</span>
+marks.update({899, 10000, 567})
+<span class="k">print</span>(marks)</code></pre>
+  <div class="out">{2, 899, 567, 999, 43, 12, 5456, 10000, 23}</div>
+</section>
+
+<section class="card reveal tilt" id="remove">
+  <h2><span class="num">5</span>Removing items</h2>
+<pre><code><span class="c"># pop() removes and returns ONE item</span>
+<span class="c"># Since a set is unordered, we cannot know in advance which item will go</span>
+removed = marks.pop()
+<span class="k">print</span>(<span class="s">"Removed:"</span>, removed)
+<span class="k">print</span>(marks)</code></pre>
+  <div class="out">Removed: 2
+{899, 567, 999, 43, 12, 5456, 10000, 23}</div>
+
+<pre><code><span class="c"># remove() deletes the item we mention</span>
+marks.remove(5456)
+<span class="k">print</span>(marks)</code></pre>
+  <div class="out">{899, 567, 999, 43, 12, 10000, 23}</div>
+
+<pre><code><span class="c"># remove() raises KeyError if the item is not in the set</span>
+marks.remove(987654)</code></pre>
+  <div class="out err">KeyError: 987654</div>
+
+<pre><code><span class="c"># discard() also deletes the item we mention,</span>
+<span class="c"># but if the item is not found it quietly does nothing (no error)</span>
+marks.discard(1999999)
+<span class="k">print</span>(marks)</code></pre>
+  <div class="out">{899, 567, 999, 43, 12, 10000, 23}</div>
+
+  <div class="note"><b>Tip:</b> use <code>remove()</code> when the item <i>must</i> be there, so the error helps you catch a bug. Use <code>discard()</code> when you are not sure and just want it gone.</div>
+</section>
+
+<section class="card reveal tilt" id="ops">
+  <h2><span class="num">6</span>Set operations</h2>
+  <p>We use these two sets for every example below:</p>
+<pre><code>a = {1, 2, 3, 4, 5}
+b = {3, 4, 5, 6, 7}</code></pre>
+  <p>Each method has a <b>normal</b> version, which returns a new set and leaves <code>a</code> as it is, and an <b><code>_update</code></b> version, which changes <code>a</code> itself and returns <code>None</code>.</p>
+
+  <div class="ops">
+    <div class="op tilt">
+      <span class="sym">a &amp; b</span><h3>Intersection</h3>
+      <svg viewBox="0 0 200 110" role="img" aria-label="Intersection: only the overlap is shaded">
+        <defs><clipPath id="ca"><circle cx="78" cy="55" r="45"/></clipPath></defs>
+        <circle cx="78" cy="55" r="45" fill="#fff" stroke="#e07a9a" stroke-width="2"/>
+        <circle cx="122" cy="55" r="45" fill="#fff" stroke="#e07a9a" stroke-width="2"/>
+        <circle cx="122" cy="55" r="45" fill="#e07a9a" clip-path="url(#ca)"/>
+        <circle cx="78" cy="55" r="45" fill="none" stroke="#b03e66" stroke-width="2"/><circle cx="122" cy="55" r="45" fill="none" stroke="#b03e66" stroke-width="2"/>
+        <text x="100" y="60" text-anchor="middle" font-size="13" fill="#fff" font-weight="700">3 4 5</text>
+        <text x="55" y="60" text-anchor="middle" font-size="13" fill="#5b2a45">1 2</text>
+        <text x="145" y="60" text-anchor="middle" font-size="13" fill="#5b2a45">6 7</text>
+      </svg>
+      <p>Items common to both.</p>
+    </div>
+    <div class="op tilt">
+      <span class="sym">a | b</span><h3>Union</h3>
+      <svg viewBox="0 0 200 110" role="img" aria-label="Union: both circles shaded">
+        <circle cx="78" cy="55" r="45" fill="#e07a9a"/><circle cx="122" cy="55" r="45" fill="#e07a9a"/>
+        <circle cx="78" cy="55" r="45" fill="none" stroke="#b03e66" stroke-width="2"/><circle cx="122" cy="55" r="45" fill="none" stroke="#b03e66" stroke-width="2"/>
+        <text x="100" y="60" text-anchor="middle" font-size="13" fill="#fff" font-weight="700">3 4 5</text>
+        <text x="55" y="60" text-anchor="middle" font-size="13" fill="#fff" font-weight="700">1 2</text>
+        <text x="145" y="60" text-anchor="middle" font-size="13" fill="#fff" font-weight="700">6 7</text>
+      </svg>
+      <p>Everything from both, common items only once.</p>
+    </div>
+    <div class="op tilt">
+      <span class="sym">a - b</span><h3>Difference</h3>
+      <svg viewBox="0 0 200 110" role="img" aria-label="Difference: only the left part outside the overlap is shaded">
+        <defs><mask id="mb"><rect width="200" height="110" fill="#fff"/><circle cx="122" cy="55" r="45" fill="#000"/></mask></defs>
+        <circle cx="122" cy="55" r="45" fill="#fff"/>
+        <circle cx="78" cy="55" r="45" fill="#e07a9a" mask="url(#mb)"/>
+        <circle cx="78" cy="55" r="45" fill="none" stroke="#b03e66" stroke-width="2"/><circle cx="122" cy="55" r="45" fill="none" stroke="#b03e66" stroke-width="2"/>
+        <text x="100" y="60" text-anchor="middle" font-size="13" fill="#5b2a45">3 4 5</text>
+        <text x="55" y="60" text-anchor="middle" font-size="13" fill="#fff" font-weight="700">1 2</text>
+        <text x="145" y="60" text-anchor="middle" font-size="13" fill="#5b2a45">6 7</text>
+      </svg>
+      <p>In <code>a</code> but not in <code>b</code>. Order matters: <code>b - a</code> gives <code>{6, 7}</code>.</p>
+    </div>
+    <div class="op tilt">
+      <span class="sym">a ^ b</span><h3>Symmetric difference</h3>
+      <svg viewBox="0 0 200 110" role="img" aria-label="Symmetric difference: both circles shaded except the overlap">
+        <defs><clipPath id="cb"><circle cx="78" cy="55" r="45"/></clipPath></defs>
+        <circle cx="78" cy="55" r="45" fill="#e07a9a"/><circle cx="122" cy="55" r="45" fill="#e07a9a"/>
+        <circle cx="122" cy="55" r="45" fill="#fff" clip-path="url(#cb)"/>
+        <circle cx="78" cy="55" r="45" fill="none" stroke="#b03e66" stroke-width="2"/><circle cx="122" cy="55" r="45" fill="none" stroke="#b03e66" stroke-width="2"/>
+        <text x="100" y="60" text-anchor="middle" font-size="13" fill="#5b2a45">3 4 5</text>
+        <text x="55" y="60" text-anchor="middle" font-size="13" fill="#fff" font-weight="700">1 2</text>
+        <text x="145" y="60" text-anchor="middle" font-size="13" fill="#fff" font-weight="700">6 7</text>
+      </svg>
+      <p>Items that are <b>not</b> common.</p>
+    </div>
+  </div>
+
+  <h3>Intersection: items common to both</h3>
+<pre><code><span class="c"># intersection() returns a NEW set with the items present in both a and b</span>
+<span class="c"># Short form: a &amp; b</span>
+<span class="k">print</span>(a.intersection(b))
+<span class="k">print</span>(a &amp; b)
+<span class="k">print</span>(a)   <span class="c"># a is unchanged</span></code></pre>
+  <div class="out">{3, 4, 5}
+{3, 4, 5}
+{1, 2, 3, 4, 5}</div>
+<pre><code><span class="c"># intersection_update() changes 'a' itself so that it keeps only the common items</span>
+a = {1, 2, 3, 4, 5}          <span class="c"># fresh copy of a for this example</span>
+a.intersection_update(b)     <span class="c"># now a = {3, 4, 5}</span>
+<span class="k">print</span>(a)</code></pre>
+  <div class="out">{3, 4, 5}</div>
+
+  <h3>Difference: items in a but not in b</h3>
+<pre><code>a = {1, 2, 3, 4, 5}
+<span class="c"># difference() returns a NEW set with items that are in a but NOT in b</span>
+<span class="c"># Short form: a - b</span>
+<span class="k">print</span>(a.difference(b))
+<span class="k">print</span>(a - b)
+<span class="k">print</span>(b - a)   <span class="c"># order matters: items in b but not in a</span></code></pre>
+  <div class="out">{1, 2}
+{1, 2}
+{6, 7}</div>
+<pre><code>a = {1, 2, 3, 4, 5}
+<span class="c"># difference_update() changes 'a' itself; it returns None, so we print a separately</span>
+<span class="k">print</span>(a.difference_update(b))   <span class="c"># prints None</span>
+<span class="k">print</span>(a)                        <span class="c"># now a = {1, 2}</span></code></pre>
+  <div class="out">None
+{1, 2}</div>
+
+  <h3>Symmetric difference: items that are NOT common</h3>
+<pre><code>a = {1, 2, 3, 4, 5}
+<span class="c"># symmetric_difference() returns items that are in a OR b, but not in both</span>
+<span class="c"># Short form: a ^ b</span>
+<span class="k">print</span>(a.symmetric_difference(b))
+<span class="k">print</span>(a ^ b)</code></pre>
+  <div class="out">{1, 2, 6, 7}
+{1, 2, 6, 7}</div>
+<pre><code>a = {1, 2, 3, 4, 5}
+<span class="c"># symmetric_difference_update() changes 'a' itself; returns None</span>
+<span class="k">print</span>(a.symmetric_difference_update(b))   <span class="c"># prints None</span>
+<span class="k">print</span>(a)                                  <span class="c"># now a = {1, 2, 6, 7}</span></code></pre>
+  <div class="out">None
+{1, 2, 6, 7}</div>
+
+  <h3>Union: all items from both, without repeats</h3>
+<pre><code>a = {1, 2, 3, 4, 5}
+<span class="c"># union() returns a NEW set with every item from a and b; common items come once</span>
+<span class="c"># Short form: a | b</span>
+x = a.union(b)
+<span class="k">print</span>(x)
+<span class="k">print</span>(a | b)</code></pre>
+  <div class="out">{1, 2, 3, 4, 5, 6, 7}
+{1, 2, 3, 4, 5, 6, 7}</div>
+</section>
+
+<section class="card reveal tilt" id="compare">
+  <h2><span class="num">7</span>Comparing sets</h2>
+  <p>These methods only check something and give back <code>True</code> or <code>False</code>. They never change the set.</p>
+<pre><code><span class="c"># isdisjoint() returns True if the two sets have NO item in common</span>
+<span class="k">print</span>(x.isdisjoint(marks))       <span class="c"># True, x and marks share nothing</span>
+<span class="k">print</span>(x.isdisjoint({7, 8, 9}))   <span class="c"># False, 7 is common</span></code></pre>
+  <div class="out">True
+False</div>
+<pre><code>y = {1, 2, 3, 4}
+<span class="k">print</span>(x)
+<span class="k">print</span>(y)</code></pre>
+  <div class="out">{1, 2, 3, 4, 5, 6, 7}
+{1, 2, 3, 4}</div>
+<pre><code><span class="c"># issuperset() returns True if x contains ALL the items of y</span>
+<span class="c"># Short form: x &gt;= y</span>
+<span class="k">print</span>(x.issuperset(y))
+<span class="k">print</span>(x &gt;= y)</code></pre>
+  <div class="out">True
+True</div>
+<pre><code><span class="c"># issubset() returns True if ALL items of y are present in x</span>
+<span class="c"># Short form: y &lt;= x</span>
+<span class="k">print</span>(y.issubset(x))
+<span class="k">print</span>(y &lt;= x)
+<span class="k">print</span>(x.issubset(y))   <span class="c"># False, x has items (5, 6, 7) that y does not have</span></code></pre>
+  <div class="out">True
+True
+False</div>
+  <div class="note"><b>Easy way to remember:</b> if <code>y</code> is a small bowl of petals inside the big basket <code>x</code>, then <code>y</code> is a <b>subset</b> of <code>x</code>, and <code>x</code> is a <b>superset</b> of <code>y</code>.</div>
+</section>
+
+<section class="card reveal tilt" id="copy">
+  <h2><span class="num">8</span>Copy and clear</h2>
+<pre><code><span class="c"># copy() makes a separate new set with the same items</span>
+z = y.copy()
+z.add(100)    <span class="c"># changing z does not affect y</span>
+<span class="k">print</span>(<span class="s">"y:"</span>, y)
+<span class="k">print</span>(<span class="s">"z:"</span>, z)</code></pre>
+  <div class="out">y: {1, 2, 3, 4}
+z: {1, 2, 3, 100, 4}</div>
+<pre><code><span class="c"># clear() removes every item, the set becomes empty: set()</span>
+z.clear()
+<span class="k">print</span>(z)
+<span class="k">print</span>(len(z))</code></pre>
+  <div class="out">set()
+0</div>
+</section>
+
+<section class="card reveal tilt" id="summary">
+  <h2><span class="num">9</span>Quick summary</h2>
+  <div class="tw"><table>
+    <tr><th>Method</th><th>Short form</th><th>Changes original?</th><th>Result</th></tr>
+    <tr><td><code>add(x)</code></td><td></td><td class="yes">Yes</td><td>adds one item</td></tr>
+    <tr><td><code>update(items)</code></td><td><code>|=</code></td><td class="yes">Yes</td><td>adds many items</td></tr>
+    <tr><td><code>pop()</code></td><td></td><td class="yes">Yes</td><td>removes any one item</td></tr>
+    <tr><td><code>remove(x)</code></td><td></td><td class="yes">Yes</td><td>removes x, KeyError if missing</td></tr>
+    <tr><td><code>discard(x)</code></td><td></td><td class="yes">Yes</td><td>removes x, no error if missing</td></tr>
+    <tr><td><code>union(b)</code></td><td><code>a | b</code></td><td class="no">No</td><td>all items</td></tr>
+    <tr><td><code>intersection(b)</code></td><td><code>a &amp; b</code></td><td class="no">No</td><td>common items</td></tr>
+    <tr><td><code>difference(b)</code></td><td><code>a - b</code></td><td class="no">No</td><td>in a, not in b</td></tr>
+    <tr><td><code>symmetric_difference(b)</code></td><td><code>a ^ b</code></td><td class="no">No</td><td>not common</td></tr>
+    <tr><td><code>..._update(b)</code></td><td><code>&amp;=</code> <code>-=</code> <code>^=</code></td><td class="yes">Yes</td><td>same as above, saved into a</td></tr>
+    <tr><td><code>isdisjoint(b)</code></td><td></td><td class="no">No</td><td>True if nothing common</td></tr>
+    <tr><td><code>issubset(b)</code></td><td><code>a &lt;= b</code></td><td class="no">No</td><td>True if all of a is in b</td></tr>
+    <tr><td><code>issuperset(b)</code></td><td><code>a &gt;= b</code></td><td class="no">No</td><td>True if a has all of b</td></tr>
+    <tr><td><code>copy()</code></td><td></td><td class="no">No</td><td>new separate set</td></tr>
+    <tr><td><code>clear()</code></td><td></td><td class="yes">Yes</td><td>empties the set</td></tr>
+  </table></div>
+</section>
+
+<section class="card reveal" id="tasks">
+  <h2><span class="num">10</span>Practice tasks</h2>
+  <p>Each task is based on a real situation. Write the code in your notebook and check the output yourself. No answers are given here, so try every task on your own first.</p>
+  <div class="tasks">
+
+    <div class="task tilt"><span class="tag easy">Easy</span>
+      <h3>1. Wedding guest list</h3>
+      <p>Your mother and father each wrote a guest list, and many relatives appear on both: <code>["Sharma ji", "Gupta ji", "Verma ji", "Sharma ji", "Mehta ji", "Gupta ji"]</code>. Convert it into a set and print how many invitation cards you need to print.</p>
+      <p class="uses">Practises: <code>set()</code>, <code>len()</code>, no duplicates</p>
+    </div>
+
+    <div class="task tilt"><span class="tag easy">Easy</span>
+      <h3>2. Empty shopping basket</h3>
+      <p>Create an empty set called <code>basket</code> for an online grocery app. Print its type to confirm it really is a set and not a dictionary.</p>
+      <p class="uses">Practises: <code>set()</code> vs <code>{}</code>, <code>type()</code></p>
+    </div>
+
+    <div class="task tilt"><span class="tag easy">Easy</span>
+      <h3>3. Society gate entry</h3>
+      <p>A housing society keeps a set of registered car numbers. Write code that takes a car number from the guard (use <code>input()</code>) and prints "Allow entry" or "Visitor, please register".</p>
+      <p class="uses">Practises: <code>in</code> / <code>not in</code></p>
+    </div>
+
+    <div class="task tilt"><span class="tag easy">Easy</span>
+      <h3>4. Adding to the cart</h3>
+      <p>Start with <code>basket = {"atta", "milk"}</code>. The customer adds "sugar", then taps "milk" again by mistake. Use <code>add()</code> both times and print the basket after each step. What do you notice?</p>
+      <p class="uses">Practises: <code>add()</code></p>
+    </div>
+
+    <div class="task tilt"><span class="tag med">Medium</span>
+      <h3>5. Combo offer</h3>
+      <p>A customer picks a "Breakfast Combo" with items <code>["bread", "eggs", "butter", "milk"]</code>. Add the whole combo to the basket from task 4 in one line and print the final basket and its size.</p>
+      <p class="uses">Practises: <code>update()</code> with a list</p>
+    </div>
+
+    <div class="task tilt"><span class="tag med">Medium</span>
+      <h3>6. Lucky draw</h3>
+      <p>A shop has a set of customer token numbers from 101 to 110. Use <code>pop()</code> three times to pick three winners. Print each winner and the tokens left. Run it a few times and explain in a comment why the winners may or may not change.</p>
+      <p class="uses">Practises: <code>pop()</code>, unordered nature</p>
+    </div>
+
+    <div class="task tilt"><span class="tag med">Medium</span>
+      <h3>7. Cancel an order item</h3>
+      <p>From the basket, the customer removes "butter" (it is surely there) and then tries to remove "paneer" (they are not sure they added it). Choose the right method for each case so the program never crashes.</p>
+      <p class="uses">Practises: <code>remove()</code> vs <code>discard()</code></p>
+    </div>
+
+    <div class="task tilt"><span class="tag med">Medium</span>
+      <h3>8. Common friends</h3>
+      <p>Riya's friends are <code>{"Aman", "Neha", "Kabir", "Isha"}</code> and Arjun's friends are <code>{"Neha", "Isha", "Rohit", "Simran"}</code>. Print their mutual friends using both the method and the <code>&amp;</code> short form.</p>
+      <p class="uses">Practises: <code>intersection()</code>, <code>&amp;</code></p>
+    </div>
+
+    <div class="task tilt"><span class="tag med">Medium</span>
+      <h3>9. Class WhatsApp group</h3>
+      <p>Section A and Section B students are merging into one WhatsApp group. Some students are in both sections' lists. Make one set of all members and print the group size.</p>
+      <p class="uses">Practises: <code>union()</code>, <code>|</code></p>
+    </div>
+
+    <div class="task tilt"><span class="tag med">Medium</span>
+      <h3>10. Who has not paid the fees?</h3>
+      <p>You have a set of all enrolled roll numbers and a set of roll numbers that have paid. Print the roll numbers who still have to pay. Then try the subtraction the other way round and explain in a comment what that result means.</p>
+      <p class="uses">Practises: <code>difference()</code>, <code>-</code></p>
+    </div>
+
+    <div class="task tilt"><span class="tag med">Medium</span>
+      <h3>11. Unique skills</h3>
+      <p>Two job candidates list their skills: <code>{"Python", "Excel", "SQL", "Power BI"}</code> and <code>{"Excel", "Tableau", "SQL", "R"}</code>. Print the skills that only one of them has, the ones that are not shared.</p>
+      <p class="uses">Practises: <code>symmetric_difference()</code>, <code>^</code></p>
+    </div>
+
+    <div class="task tilt"><span class="tag hard">Hard</span>
+      <h3>12. Stock check in a warehouse</h3>
+      <p>The warehouse keeps a set <code>in_stock</code>. Today a set <code>sold_out</code> arrived from the billing team. Update <code>in_stock</code> itself so the sold-out items are gone, without creating a new variable. Print what the update method returns, and then print <code>in_stock</code>.</p>
+      <p class="uses">Practises: <code>difference_update()</code>, returns <code>None</code></p>
+    </div>
+
+    <div class="task tilt"><span class="tag hard">Hard</span>
+      <h3>13. Filter a playlist</h3>
+      <p>Your playlist is a set of songs, and your friend sends a set of songs they like. Update your playlist so that it keeps only the songs you both like. Use the <code>_update</code> method once, then do the same task again with the <code>&amp;=</code> operator.</p>
+      <p class="uses">Practises: <code>intersection_update()</code>, <code>&amp;=</code></p>
+    </div>
+
+    <div class="task tilt"><span class="tag hard">Hard</span>
+      <h3>14. Exam hall seating</h3>
+      <p>For the morning and evening exam shifts, you have two sets of student IDs. The rule is that no student can be in both shifts. Write code that prints "Seating plan is valid" or shows the clashing IDs.</p>
+      <p class="uses">Practises: <code>isdisjoint()</code>, <code>&amp;</code></p>
+    </div>
+
+    <div class="task tilt"><span class="tag hard">Hard</span>
+      <h3>15. Recipe checker</h3>
+      <p>A recipe for paneer butter masala needs <code>{"paneer", "butter", "tomato", "cream", "garam masala"}</code>. Your kitchen has a set of items. Check if you can cook it. If you cannot, print the list of items you need to buy.</p>
+      <p class="uses">Practises: <code>issubset()</code> / <code>issuperset()</code>, <code>difference()</code></p>
+    </div>
+
+    <div class="task tilt"><span class="tag hard">Hard</span>
+      <h3>16. Course eligibility</h3>
+      <p>A Data Analytics course needs the prerequisites <code>{"Excel", "Statistics"}</code>. You have a dictionary of students with a set of completed courses for each one. Loop through it and print which students are eligible, using <code>&lt;=</code> or <code>&gt;=</code>.</p>
+      <p class="uses">Practises: subset/superset operators, loops</p>
+    </div>
+
+    <div class="task tilt"><span class="tag hard">Hard</span>
+      <h3>17. Monthly reset</h3>
+      <p>A gym keeps a set of members who visited this month. Before clearing it on the 1st, save a backup for the monthly report. Clear the original and prove that the backup still has the data.</p>
+      <p class="uses">Practises: <code>copy()</code>, <code>clear()</code></p>
+    </div>
+
+    <div class="task tilt"><span class="tag hard">Hard</span>
+      <h3>18. Mini project: Diwali sale report</h3>
+      <p>You have three lists of customer phone numbers, for Day 1, Day 2 and Day 3 of a sale, with repeats inside each list. Find: (a) total unique customers, (b) customers who came on all three days, (c) customers who came only on Day 1, (d) new customers on Day 3 who never came before. Print a neat report.</p>
+      <p class="uses">Practises: everything together</p>
+    </div>
+
+  </div>
+</section>
+
+</main>
+
+<footer>Python Sets · Rubi DA Sessions</footer>
+
+<script>
+  // falling petals
+  (function () {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const box = document.getElementById('petals');
+    const count = innerWidth < 600 ? 14 : 28;
+    for (let i = 0; i < count; i++) {
+      const p = document.createElement('span');
+      p.className = 'petal';
+      const size = 8 + Math.random() * 10;
+      p.style.left = Math.random() * 100 + 'vw';
+      p.style.width = size + 'px';
+      p.style.height = size * .8 + 'px';
+      const fall = 9 + Math.random() * 10;
+      p.style.animationDuration = fall + 's, ' + (2 + Math.random() * 3) + 's';
+      p.style.animationDelay = (-Math.random() * fall) + 's, 0s';
+      box.appendChild(p);
+    }
+  })();
+
+  // reveal on scroll
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold: .08 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  // 3D tilt on hover (pointer devices only)
+  if (matchMedia('(hover: hover) and (prefers-reduced-motion: no-preference)').matches) {
+    document.querySelectorAll('.tilt').forEach(el => {
+      const max = el.classList.contains('card') ? 3 : 8;
+      el.addEventListener('pointermove', ev => {
+        const r = el.getBoundingClientRect();
+        const x = (ev.clientX - r.left) / r.width - .5;
+        const y = (ev.clientY - r.top) / r.height - .5;
+        el.style.transform = `perspective(1000px) rotateX(${-y * max}deg) rotateY(${x * max}deg) translateY(-3px)`;
+      });
+      el.addEventListener('pointerleave', () => { el.style.transform = ''; });
+    });
+  }
+</script>
+</body>
+</html>
